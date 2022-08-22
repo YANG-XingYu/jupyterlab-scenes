@@ -1,5 +1,5 @@
 :root {
-    --scenes-color: rgb(129, 68, 129);
+    --scenes-color: rgba(129, 68, 129, 1);
 }
 
 .scene-cell .CodeMirror:after {
@@ -12,6 +12,12 @@
     top: 10px;
     border-radius: 50%;
     background-color: var(--scenes-color);
+}
+
+.scene-cell .jp-InputPrompt {
+    border-right-style: solid;
+    border-right-color: var(--scenes-color);
+    border-right-width: 5px;
 }
 
 .scenes-ScenesSidebar {
@@ -101,8 +107,8 @@
 /* **** Buttons ***************** */
 
 .scenes-ItemButton {
-    height: 16px;
-    width: 16px;
+    height: 26px;
+    width: 26px;
     background-color: inherit;
     border-style: solid;
     border-color: var(--jp-layout-color2);
