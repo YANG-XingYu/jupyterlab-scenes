@@ -5,6 +5,8 @@ import { IMainMenu } from '@jupyterlab/mainmenu';
 import { Menu } from '@lumino/widgets';
 import { ReactWidget, InputDialog, Dialog, showErrorMessage } from '@jupyterlab/apputils';
 import { LabIcon } from '@jupyterlab/ui-components'
+import { ISettingRegistry } from '@jupyterlab/settingregistry';
+
 
 import React from 'react';
 
@@ -15,7 +17,7 @@ import scenesLogo from '../style/svg/scenesLogo.svg';
 const scenesIcon = new LabIcon({name: 'scenes', svgstr: scenesLogo});
 
 export class ScenesSidebar extends ReactWidget {
-    constructor(app: JupyterFrontEnd, nbTracker: INotebookTracker, mainMenu: IMainMenu) {
+    constructor(app: JupyterFrontEnd, nbTracker: INotebookTracker, mainMenu: IMainMenu, settingRegistry: ISettingRegistry) {
         super();
 
         this._app = app;
@@ -23,7 +25,7 @@ export class ScenesSidebar extends ReactWidget {
         this._mainMenu = mainMenu;
 
         this._scenesMenu = null;
-        this._notebookHandler = new NotebookHandler(nbTracker);
+        this._notebookHandler = new NotebookHandler(nbTracker, settingRegistry);
 
         this._setupWidget();
         this._setupGlobalCommands();
@@ -40,7 +42,7 @@ export class ScenesSidebar extends ReactWidget {
                 this.update(); 
             });
             // this is needed for handling copy/paste
-            nbpanel.content.activeCellChanged.connect((notebook: Notebook, cell: Cell) => {
+            nbpanel.content.activeCellChanged.connect((notebook: Notebook, cell: Cell | null) => {
                 this._notebookHandler.updateCellClassesAndTags(notebook, this._notebookHandler.getActiveScene()!, cell);
             });
         });

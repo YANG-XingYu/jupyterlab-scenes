@@ -8,20 +8,8 @@ import { ScenesSidebar } from './widget';
 
 function activateScenes(app: JupyterFrontEnd, settingRegistry: ISettingRegistry, nbTracker: INotebookTracker, mainMenu: IMainMenu, labShell: ILabShell) {
 
-  // load settings
-  if (settingRegistry) {
-    settingRegistry
-      .load(plugin.id)
-      .then(settings => {
-        //console.log('jupyterlab_scenes settings loaded:', settings.composite);
-      })
-      .catch(reason => {
-        //console.error('Failed to load settings for jupyterlab_scenes.', reason);
-      });
-  }
-
   // create the ScenesSidebar widget
-  const scenesSidebar = new ScenesSidebar(app, nbTracker, mainMenu);
+  const scenesSidebar = new ScenesSidebar(app, nbTracker, mainMenu, settingRegistry);
   app.shell.add(scenesSidebar, 'left', { rank: 1000 });
 }
 

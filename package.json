@@ -1,6 +1,6 @@
 {
   "name": "jupyterlab_scenes",
-  "version": "1.4.0",
+  "version": "2.0.0-alpha1",
   "description": "Define subsets of code cells as scenes and execute them.",
   "keywords": [
     "jupyter",
@@ -46,15 +46,15 @@
     "watch:labextension": "jupyter labextension watch ."
   },
   "dependencies": {
-    "@jupyterlab/application": "^3.1.0",
-    "@jupyterlab/mainmenu": "^3.2.4",
-    "@jupyterlab/notebook": "^3.2.4",
-    "@jupyterlab/settingregistry": "^3.1.0",
-    "@lumino/coreutils": "^1.11.1",
-    "react-dom": "^17.0.2"
+    "@jupyterlab/application": "^4.0.0-alpha.19",
+    "@jupyterlab/mainmenu": "^4.0.0-alpha.19",
+    "@jupyterlab/notebook": "^4.0.0-alpha.19",
+    "@jupyterlab/settingregistry": "^4.0.0-alpha.19",
+    "@lumino/coreutils": "^2.0.0-beta.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@jupyterlab/builder": "^3.1.0",
+    "@jupyterlab/builder": "^4.0.0-alpha.19",
     "@typescript-eslint/eslint-plugin": "^4.8.1",
     "@typescript-eslint/parser": "^4.8.1",
     "eslint": "^7.14.0",
@@ -63,7 +63,7 @@
     "npm-run-all": "^4.1.5",
     "prettier": "^2.1.1",
     "rimraf": "^3.0.2",
-    "typescript": "~4.1.3"
+    "typescript": "~5.0.0-beta"
   },
   "sideEffects": [
     "style/*.css",
@@ -81,7 +81,7 @@
   "jupyter-releaser": {
     "hooks": {
       "before-build-npm": [
-        "python -m pip install jupyterlab~=3.1",
+        "python -m pip install jupyterlab~=4.0.0a34",
         "jlpm"
       ]
     }

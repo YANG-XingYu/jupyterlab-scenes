@@ -4,6 +4,7 @@ import { PartialJSONObject } from '@lumino/coreutils';
 import { PathExt } from '@jupyterlab/coreutils';
 import { Signal } from '@lumino/signaling';
 import { ConnectionStatus, IKernelConnection } from '@jupyterlab/services/lib/kernel/kernel';
+import { ISettingRegistry } from '@jupyterlab/settingregistry';
 
 
 const NB_METADATA_KEY = 'scenes_data';
@@ -14,14 +15,33 @@ export class NotebookHandler {
 
     private _nbTracker;
     private _sceneDB: NotebookSceneDatabase;
+    private _enableLegacyInits: boolean;
 
     scenesChanged = new Signal(this);
 
-    constructor(nbTracker: INotebookTracker) {
+    constructor(nbTracker: INotebookTracker, settingRegistry: ISettingRegistry) {
         this._nbTracker = nbTracker;
         this._sceneDB = new NotebookSceneDatabase(nbTracker)
 
+        this._enableLegacyInits = false;
+
+        // load settings
+        if (settingRegistry) {
+            settingRegistry.load('jupyterlab_scenes:plugin').then(settings => {
+                this.updateSettings(settings);
+                settings.changed.connect(() => {this.updateSettings(settings);});
+
+            })
+            .catch(reason => {
+                console.error('Failed to load settings for jupyterlab_scenes.', reason);
+            });
+        }
+
         this._setupKernelListener();
+    }
+
+    updateSettings(settings: ISettingRegistry.ISettings) {
+        this._enableLegacyInits = settings.composite.legacyInit as boolean;
     }
 
     /* ****************************************************************************************************************************************
@@ -138,21 +158,25 @@ export class NotebookHandler {
         const tag = 'scene__' + current_scene;
         const notebook = this._nbTracker.currentWidget.content;
 
-        const set_membership = !this._nbTracker.activeCell.model.metadata.get(tag);
+        const set_membership = !this._nbTracker.activeCell.model.getMetadata(tag);
+
+        //const set_membership = !this._nbTracker.activeCell.model.getMetadata(tag);
+
+        
 
         notebook.widgets.forEach((cell: Cell) => {
             if(!notebook.isSelectedOrActive(cell)) return;
             if(cell.model.type != 'code') return;
 
             if(set_membership) {
-                cell.model.metadata.set(tag, true);
+                cell.model.setMetadata(tag, true);
                 if(is_init_scene) {
-                    cell.model.metadata.set('init_cell', true);
+                    cell.model.setMetadata('init_cell', true);
                 }
             } else {
-                cell.model.metadata.delete(tag);
+                cell.model.deleteMetadata(tag);
                 if(is_init_scene) {
-                    cell.model.metadata.delete('init_cell');
+                    cell.model.deleteMetadata('init_cell');
                 }
             }
             this._updateCellClassAndTags(cell, tag);
@@ -173,7 +197,7 @@ export class NotebookHandler {
     runSceneInNotebook(notebookPanel: NotebookPanel, scene_name: string) {
         const tag = this._getSceneTag(scene_name);
         notebookPanel.content.widgets.map((cell: Cell) => {
-            if(!!cell.model.metadata.get(tag)) {
+            if(!!cell.model.getMetadata(tag)) {
                 if(cell.model.type == 'code') {
                     CodeCell.execute(cell as CodeCell, notebookPanel.sessionContext, {recordTiming: notebookPanel.content.notebookConfig.recordTiming});
                 }
@@ -237,7 +261,7 @@ export class NotebookHandler {
 
         for(let n=cellIdx+1; n<numCells; n++) {
             let cell = cells[n];
-            if(cell.model.metadata.get(tag)) {
+            if(cell.model.getMetadata(tag)) {
                 this._activateCellAndExpandParentHeadings(cell);
                 break;
             }
@@ -253,13 +277,15 @@ export class NotebookHandler {
 
         for(let n=cellIdx-1; n>=0; n--) {
             let cell = cells[n];
-            if(cell.model.metadata.get(tag)) {
+            if(cell.model.getMetadata(tag)) {
                 this._activateCellAndExpandParentHeadings(cell);
                 break;
             }
         }
     }
     importLegacyInitializationCells(notebook: Notebook) {
+
+        if(!this._enableLegacyInits) return;
 
         let init_scenes_consistent = true;
         let legacy_init_cells_exist = false;
@@ -268,8 +294,8 @@ export class NotebookHandler {
 
         // find out if there are legacy init cells and, if so, whether they are consistent with the scenes init cell
         notebook.widgets.map((cell: Cell) => {
-            let is_legacy_init_cell = !!cell.model.metadata.get('init_cell');
-            let is_scenes_init_cell = init_scene_tag != null && !!cell.model.metadata.get(init_scene_tag);
+            let is_legacy_init_cell = !!cell.model.getMetadata('init_cell');
+            let is_scenes_init_cell = init_scene_tag != null && !!cell.model.getMetadata(init_scene_tag);
             if(is_legacy_init_cell) {
                 legacy_init_cells_exist = true;
             }
@@ -282,9 +308,9 @@ export class NotebookHandler {
             const scene_name = 'Legacy Init';
             
             notebook.widgets.map((cell: Cell) => {
-                let is_legacy_init_cell = !!cell.model.metadata.get('init_cell');
+                let is_legacy_init_cell = !!cell.model.getMetadata('init_cell');
                 if(is_legacy_init_cell) {
-                    cell.model.metadata.set(this._getSceneTag(scene_name), true);
+                    cell.model.setMetadata(this._getSceneTag(scene_name), true);
                 }
             });
 
@@ -305,11 +331,12 @@ export class NotebookHandler {
 
     private _updateCellClassAndTags(cell: Cell, scene_tag: string) {
         let cell_tags: string[] = [];
-        if(cell.model.metadata.has("tags")) {
-            cell_tags = cell.model.metadata.get('tags') as string[];
-        }
 
-        if(!!cell.model.metadata.get(scene_tag)) {
+        if(cell.model.getMetadata('tags')) {
+            cell_tags = cell.model.getMetadata('tags');
+        }
+        
+        if(!!cell.model.getMetadata(scene_tag)) {
             cell.addClass(SCENE_CELL_CLASS);
             if(!cell_tags.includes('ActiveScene')) cell_tags.push('ActiveScene');
         } else {
@@ -318,23 +345,25 @@ export class NotebookHandler {
         }
 
         if(cell_tags.length > 0) {
-            cell.model.metadata.set("tags", cell_tags);
+            cell.model.setMetadata("tags", cell_tags);
         } else {
-            cell.model.metadata.delete("tags");
+            cell.model.deleteMetadata("tags");
         }
 
     }
 
     private _writeCellMetadataForLegacyInitializationCellsPlugin(notebook: Notebook) {
 
+        if(!this._enableLegacyInits) return;
+
         let init_scene = this.getInitScene();
         let init_scene_tag = (init_scene != null) ? this._getSceneTag(init_scene) : null;
 
         notebook.widgets.map((cell: Cell) => {
-            if(init_scene_tag != null && !!cell.model.metadata.get(init_scene_tag)) {
-                cell.model.metadata.set('init_cell', true);
+            if(init_scene_tag != null && !!cell.model.getMetadata(init_scene_tag)) {
+                cell.model.setMetadata('init_cell', true);
             } else {
-                cell.model.metadata.delete('init_cell');
+                cell.model.deleteMetadata('init_cell');
             }
         });
     }
@@ -363,8 +392,8 @@ export class NotebookHandler {
         const tag = this._getSceneTag(scene_name);
         const notebook = nbPanel.content;
         notebook.widgets.map((cell: Cell) => {
-            if(!!cell.model.metadata.get(tag)) {
-                cell.model.metadata.delete(tag);
+            if(!!cell.model.getMetadata(tag)) {
+                cell.model.deleteMetadata(tag);
             }
         });
     }
@@ -374,9 +403,9 @@ export class NotebookHandler {
         const new_tag = this._getSceneTag(new_scene_name);
         const notebook = nbPanel.content;
         notebook.widgets.map((cell: Cell) => {
-            if(!!cell.model.metadata.get(old_tag)) {
-                cell.model.metadata.delete(old_tag);
-                cell.model.metadata.set(new_tag, true);
+            if(!!cell.model.getMetadata(old_tag)) {
+                cell.model.deleteMetadata(old_tag);
+                cell.model.setMetadata(new_tag, true);
             }
         });
     }
@@ -386,8 +415,8 @@ export class NotebookHandler {
         const target_tag = this._getSceneTag(target_scene_name);
         const notebook = nbPanel.content;
         notebook.widgets.map((cell: Cell) => {
-            if(!!cell.model.metadata.get(source_tag)) {
-                cell.model.metadata.set(target_tag, true);
+            if(!!cell.model.getMetadata(source_tag)) {
+                cell.model.setMetadata(target_tag, true);
             }
         });
     }
@@ -488,29 +517,29 @@ class NotebookSceneDatabase {
             notebook = this._nbTracker.currentWidget!.content;
         }
         
-        let metadata = notebook.model?.metadata;
-        if(!metadata) {
+        let model = notebook.model;
+        if(!model) {
             return null;
         }
-
-        if(!metadata.has(NB_METADATA_KEY)) {
-            //console.log('setting default scene data!!!!!!!!!!!')
-            metadata.set(NB_METADATA_KEY, {scenes: ['Default Scene'], active_scene: 'Default Scene', init_scene: ''})
+        
+        if(model.getMetadata(NB_METADATA_KEY) == null) {
+            console.log('setting default scene data!!!!!!!!!!!')
+            model.setMetadata(NB_METADATA_KEY, {scenes: ['Default Scene'], active_scene: 'Default Scene', init_scene: ''})
         }
 
-        let data_json = (metadata.get(NB_METADATA_KEY) as PartialJSONObject);
+        let data_json = (model.getMetadata(NB_METADATA_KEY) as PartialJSONObject);
         let retval = {
             scenes:        data_json['scenes'] as string[], 
             active_scene:  data_json['active_scene'] as string, 
             init_scene:    data_json['init_scene'] as string|null
         };
-        
+        console.log('got scene data' , retval);
         return retval
     }
 
     private _setSceneData(scene_data: {scenes: string[], active_scene: string, init_scene: string|null}) {
-        let metadata = this._nbTracker.currentWidget?.content.model?.metadata;
-        if(!metadata) return;
-        metadata.set(NB_METADATA_KEY, scene_data);
+        let notebook_model = this._nbTracker.currentWidget?.content.model;
+        if(!notebook_model) return;
+        notebook_model.setMetadata(NB_METADATA_KEY, scene_data);
     }
 };
