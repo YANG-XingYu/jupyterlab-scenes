@@ -261,6 +261,7 @@ export class NotebookHandler {
 
         for(let n=cellIdx+1; n<numCells; n++) {
             let cell = cells[n];
+            console.log('idx', n, cell.model, cell.model.getMetadata(tag))
             if(cell.model.getMetadata(tag)) {
                 this._activateCellAndExpandParentHeadings(cell);
                 break;
@@ -282,6 +283,7 @@ export class NotebookHandler {
                 break;
             }
         }
+
     }
     importLegacyInitializationCells(notebook: Notebook) {
 
@@ -367,11 +369,13 @@ export class NotebookHandler {
             }
         });
     }
-
     
     private _activateCellAndExpandParentHeadings(cell: Cell) {
-        NotebookActions.expandParent(cell, this._nbTracker.currentWidget!.content);
-        cell.activate();
+        let notebook = this._nbTracker.currentWidget!.content;
+        NotebookActions.expandParent(cell, notebook);
+        notebook.scrollToCell(cell).then(() => { notebook.activeCellIndex = notebook.widgets.indexOf(cell); });
+        //notebook.activeCellIndex = notebook.widgets.indexOf(cell);
+        //cell.activate();
     }
 
     private _moveScene(scene_name: string, direction: 'up'|'down') {
@@ -533,7 +537,7 @@ class NotebookSceneDatabase {
             active_scene:  data_json['active_scene'] as string, 
             init_scene:    data_json['init_scene'] as string|null
         };
-        console.log('got scene data' , retval);
+
         return retval
     }
 

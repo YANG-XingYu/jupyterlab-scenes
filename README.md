@@ -23,7 +23,7 @@ Define subsets of code cells as scenes and execute them.
 
 ## Requirements
 
-* JupyterLab >= 3.0
+* JupyterLab >= 4.0
 
 ## Install
 
