@@ -261,7 +261,6 @@ export class NotebookHandler {
 
         for(let n=cellIdx+1; n<numCells; n++) {
             let cell = cells[n];
-            console.log('idx', n, cell.model, cell.model.getMetadata(tag))
             if(cell.model.getMetadata(tag)) {
                 this._activateCellAndExpandParentHeadings(cell);
                 break;
@@ -374,8 +373,6 @@ export class NotebookHandler {
         let notebook = this._nbTracker.currentWidget!.content;
         NotebookActions.expandParent(cell, notebook);
         notebook.scrollToCell(cell).then(() => { notebook.activeCellIndex = notebook.widgets.indexOf(cell); });
-        //notebook.activeCellIndex = notebook.widgets.indexOf(cell);
-        //cell.activate();
     }
 
     private _moveScene(scene_name: string, direction: 'up'|'down') {
