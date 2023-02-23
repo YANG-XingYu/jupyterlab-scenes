@@ -205,22 +205,24 @@ export class NotebookHandler {
         });
     }
 
-    createNewEmptyScene(scene_name: string) : 'success' | 'fail' {
+    createNewEmptyScene(scene_name: string, activate_new_scene=true) : 'success' | 'fail' {
         const scene_list = this.getScenesList();
         if(scene_list.includes(scene_name)) return 'fail';
 
         scene_list.push(scene_name)
         this._sceneDB.setScenesList(scene_list);
+        if(activate_new_scene) this._sceneDB.setActiveScene(scene_name);
         this._scenesChanged();
         
         return 'success'
     }
     duplicateActiveScene(new_scene_name: string): 'success' | 'fail' {
     
-        let retval = this.createNewEmptyScene(new_scene_name);
+        let retval = this.createNewEmptyScene(new_scene_name, false);
         if(retval == 'fail') return 'fail';
 
         this._duplicateSceneTagInAllCells(this._nbTracker.currentWidget!, this.getActiveScene()!, new_scene_name);
+        this._sceneDB.setActiveScene(new_scene_name);
         this._scenesChanged();
         return retval;
     }
