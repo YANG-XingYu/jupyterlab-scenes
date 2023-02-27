@@ -21,6 +21,14 @@ Define subsets of code cells as scenes and execute them.
 ![Initialization](https://github.com/schmidi314/jupyterlab-scenes/blob/master/gifs/scenes_init.gif?raw=true)
 
 
+* To run a scene named `My Favourite Scene` programatically, do
+    ```
+    from ipylab import JupyterFrontEnd
+    JupyterFrontEnd().commands.execute('scenes:run-scene', 'My Favourite Scene')
+    ```
+    But you may run only one scene at a time. No excessive looping as the scenes are executed only after the cell that launches the `run-scene` command is finished.
+
+
 ## Requirements
 
 * JupyterLab >= 4.0

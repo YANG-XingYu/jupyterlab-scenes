@@ -98,7 +98,15 @@ export class ScenesSidebar extends ReactWidget {
 
         this._app.commands.addCommand(ScenesSidebar.command_id_run_scene, {
             label: 'Run Scene',
-            execute: () => { this._notebookHandler.runActiveSceneInCurrentNotebook(); }
+            execute: (scene_name) => { 
+                if(typeof scene_name == "string") {   
+                    console.log('run', scene_name)
+                    this._notebookHandler.runSceneInCurrentNotebook(scene_name);
+                } else {
+                    console.log('run active')
+                    this._notebookHandler.runActiveSceneInCurrentNotebook(); 
+                }                
+            }
         });
 
         this._app.commands.addCommand(ScenesSidebar.command_id_new_empty_scene, {
