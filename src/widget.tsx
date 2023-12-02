@@ -182,6 +182,20 @@ export class ScenesSidebar extends ReactWidget {
             label: 'Jump to Previous Scene Cell',
             execute: () => { this._notebookHandler.jumpToPreviousSceneCell(); }
         });
+
+        this._app.commands.addCommand(ScenesSidebar.command_id_show_scene, {
+            label: 'Show Scene',
+            execute: (scene_name) => {
+                if(typeof scene_name == "string") {
+                    console.log('show', scene_name)
+                    this._notebookHandler.showSceneInCurrentNotebook(scene_name);
+                } else {
+                    console.log('show active')
+                    this._notebookHandler.showActiveSceneInCurrentNotebook();
+                }
+            }
+        });
+
     }
 
     private _setupKeyboardShortcuts() {
@@ -205,6 +219,7 @@ export class ScenesSidebar extends ReactWidget {
 
         this._scenesMenu.addItem({command: ScenesSidebar.command_id_toggle_scene_cell});
         this._scenesMenu.addItem({command: ScenesSidebar.command_id_run_scene});
+        this._scenesMenu.addItem({command: ScenesSidebar.command_id_show_scene});
         this._scenesMenu.addItem({type: 'separator'});
         this._scenesMenu.addItem({command: ScenesSidebar.command_id_new_empty_scene});
         this._scenesMenu.addItem({command: ScenesSidebar.command_id_duplicate_scene});
@@ -233,4 +248,5 @@ export class ScenesSidebar extends ReactWidget {
     static command_id_move_active_scene_down = 'scenes:move-active-scene-down';
     static command_id_to_next_scene_cell =     'scenes:jump-to-next-scene-cell';
     static command_id_to_previous_scene_cell = 'scenes:jump-to-previous-scene-cell';
+    static command_id_show_scene =             'scenes:show-scene';
 };

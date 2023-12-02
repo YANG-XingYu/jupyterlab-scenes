@@ -10,7 +10,7 @@ function activateScenes(app: JupyterFrontEnd, settingRegistry: ISettingRegistry,
 
   // create the ScenesSidebar widget
   const scenesSidebar = new ScenesSidebar(app, nbTracker, mainMenu, settingRegistry);
-  app.shell.add(scenesSidebar, 'left', { rank: 1000 });
+  app.shell.add(scenesSidebar, 'right', { rank: 1000 });
 }
 
 /**

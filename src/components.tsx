@@ -1,7 +1,7 @@
 import { CommandRegistry } from '@lumino/commands';
 import * as React from 'react';
 import { NotebookHandler } from './backend';
-import { runIcon, closeIcon, editIcon, addIcon, copyIcon } from '@jupyterlab/ui-components';
+import { runIcon, closeIcon, editIcon, addIcon, copyIcon, treeViewIcon } from '@jupyterlab/ui-components';
 import { LabIcon } from '@jupyterlab/ui-components'
 
 
@@ -89,6 +89,12 @@ class ScenesList extends React.Component<IPropertiesScenesList, IState> {
                 event.stopPropagation();
                 this.props.notebookHandler.runSceneInCurrentNotebook(scene_name);
             }
+
+            const onClickShow = (event: React.SyntheticEvent<HTMLSpanElement>) => {
+                event.preventDefault();
+                event.stopPropagation();
+                this.props.notebookHandler.showSceneInCurrentNotebook(scene_name);
+            }
             
             let active = this.props.currentScene == scene_name;
             let init = this.props.initScene == scene_name;
@@ -101,6 +107,7 @@ class ScenesList extends React.Component<IPropertiesScenesList, IState> {
                     <button className="scenes-ItemButton" title="Delete Scene" onClick={onClickDelete}><closeIcon.react tag="span" className="jp-ToolbarButtonComponent-icon f1vya9e0"/></button>
                     <button className="scenes-ItemButton" title="Run Scene" onClick={onClickRun}><runIcon.react tag="span" className="jp-ToolbarButtonComponent-icon f1vya9e0"/></button>
                     <button className="scenes-ItemButton" title="Rename Scene" onClick={onClickEdit}><editIcon.react tag="span" className="jp-ToolbarButtonComponent-icon f1vya9e0"/></button>
+                    <button className="scenes-ItemButton" title="Show Scene" onClick={onClickShow}><treeViewIcon.react tag="span" className="jp-ToolbarButtonComponent-icon f1vya9e0"/></button>
                     <div className="scenes-ItemText">{sceneNameDisplay}</div>
                     <div className="scenes-SceneItemSpacer"></div>
                     <button onClick={onClickInit} className={classNameInitButton}>init</button>

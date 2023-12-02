@@ -160,9 +160,6 @@ export class NotebookHandler {
 
         const set_membership = !this._nbTracker.activeCell.model.getMetadata(tag);
 
-        //const set_membership = !this._nbTracker.activeCell.model.getMetadata(tag);
-
-        
 
         notebook.widgets.forEach((cell: Cell) => {
             if(!notebook.isSelectedOrActive(cell)) return;
@@ -234,7 +231,30 @@ export class NotebookHandler {
         this._moveScene(this._sceneDB.getActiveScene()!, 'down');
         this._scenesChanged();
     }
-    
+
+    showActiveSceneInCurrentNotebook() {
+        const active_scene = this._sceneDB.getActiveScene();
+        if(active_scene) this.showSceneInCurrentNotebook(active_scene);
+    }
+    showSceneInCurrentNotebook(scene_name: string) {
+        if(!this._nbTracker.currentWidget) return;
+        const notebook = this._nbTracker.currentWidget.content;
+        if (!notebook.model || !notebook.activeCell) return;
+        const tag = this._getSceneTag(scene_name);
+
+        notebook.widgets.forEach(cell => {
+            if (cell.model.type === 'code') {
+                if(!!cell.model.getMetadata(tag)) {
+                    cell.inputHidden = false;
+                    (cell as CodeCell).outputHidden = false;
+                } else {
+                    cell.inputHidden = true;
+                    (cell as CodeCell).outputHidden = true;
+                }
+            }
+        });
+    }
+
     // **** various **************************************************************
 
     updateCellClassesAndTags(notebook: Notebook, scene_name:(string|null)=null, cell:(Cell|null)=null) {
