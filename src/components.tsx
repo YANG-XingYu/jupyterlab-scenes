@@ -104,10 +104,10 @@ class ScenesList extends React.Component<IPropertiesScenesList, IState> {
                         
             return (
                 <div className={className} onClick={onClickActivate} key={scene_name}>
-                    <button className="scenes-ItemButton" title="Delete Scene" onClick={onClickDelete}><closeIcon.react tag="span" className="jp-ToolbarButtonComponent-icon f1vya9e0"/></button>
                     <button className="scenes-ItemButton" title="Run Scene" onClick={onClickRun}><runIcon.react tag="span" className="jp-ToolbarButtonComponent-icon f1vya9e0"/></button>
-                    <button className="scenes-ItemButton" title="Rename Scene" onClick={onClickEdit}><editIcon.react tag="span" className="jp-ToolbarButtonComponent-icon f1vya9e0"/></button>
                     <button className="scenes-ItemButton" title="Show Scene" onClick={onClickShow}><treeViewIcon.react tag="span" className="jp-ToolbarButtonComponent-icon f1vya9e0"/></button>
+                    <button className="scenes-ItemButton" title="Rename Scene" onClick={onClickEdit}><editIcon.react tag="span" className="jp-ToolbarButtonComponent-icon f1vya9e0"/></button>
+                    <button className="scenes-ItemButton" title="Delete Scene" onClick={onClickDelete}><closeIcon.react tag="span" className="jp-ToolbarButtonComponent-icon f1vya9e0"/></button>
                     <div className="scenes-ItemText">{sceneNameDisplay}</div>
                     <div className="scenes-SceneItemSpacer"></div>
                     <button onClick={onClickInit} className={classNameInitButton}>init</button>
